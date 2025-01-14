@@ -6,6 +6,8 @@ A pet project. Basic REST API practise with some CRUD operation.
 
 1. I will use golang for backend.
 2. will use cobra
-2. I will use go-chi
-2. MySql for Database
-3. K8s for deployment
+3. will use go-chi
+4. MySql for Database
+5. K8s for deployment
+6. Redis for cache
+7. Will try to add Elastic Search
