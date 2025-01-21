@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import "github.com/shn27/RestaurantManagementSystem/internal/database"
 
 func main() {
-	fmt.Println("Hello World")
+	err := database.Connection.Execute()
+	if err != nil {
+		return
+	}
 }
