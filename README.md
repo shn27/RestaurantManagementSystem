@@ -11,3 +11,7 @@ A pet project. Basic REST API practise with some CRUD operation.
 5. K8s for deployment
 6. Redis for cache
 7. Will try to add Elastic Search
+
+
+# Help
+https://dev.to/pradumnasaraf/dockerizing-a-golang-api-with-mysql-and-adding-docker-compose-support-9b1

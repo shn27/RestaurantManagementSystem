@@ -1,10 +1,9 @@
 package main
 
-import "github.com/shn27/RestaurantManagementSystem/internal/database"
+import "github.com/shn27/RestaurantManagementSystem/cmd"
 
 func main() {
-	err := database.Connection.Execute()
-	if err != nil {
-		return
-	}
+	//cmd.ExecuteConnection()
+	//database.ConnectDB()
+	cmd.ExecuteSeeds()
 }
