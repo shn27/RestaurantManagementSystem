@@ -2,6 +2,12 @@
 
 A pet project. Basic REST API practise with some CRUD operation.
 
+# How to run
+docker compose -f compose.yaml up
+
+# Current work progress
+1. parse TransactionDate of purchase history (todo)
+
 # To-DO
 
 1. I will use golang for backend.
