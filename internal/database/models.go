@@ -41,10 +41,10 @@ type Menu struct {
 
 type OpeningHours struct {
 	ID           uint       `json:"id" gorm:"primary_key:autoIncrement"`
-	RestaurantID string     `json:"restaurant_id" gorm:"not null;index"`
-	Day          int        `json:"day"`
-	OpeningTime  time.Time  `json:"opening_time"`
-	ClosingTime  time.Time  `json:"closing_time"`
+	RestaurantID uint       `json:"restaurant_id" gorm:"not null;index"`
+	Day          string     `json:"day"`
+	OpeningTime  string     `json:"opening_time"`
+	ClosingTime  string     `json:"closing_time"`
 	Restaurant   Restaurant `json:"restaurant" gorm:"foreignKey:RestaurantID"`
 	gorm.Model
 }
