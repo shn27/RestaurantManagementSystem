@@ -2,7 +2,7 @@ package database
 
 import "log"
 
-func DeleteTables() {
+func deleteTables() {
 	err := DB.Migrator().DropTable(
 		&User{},
 		&Restaurant{},
@@ -15,7 +15,7 @@ func DeleteTables() {
 	}
 }
 
-func MigrateDatabase() {
+func migrateDatabase() {
 	err := DB.AutoMigrate(
 		&User{},
 		&Restaurant{},

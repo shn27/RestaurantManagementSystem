@@ -3,6 +3,7 @@ module github.com/shn27/RestaurantManagementSystem
 go 1.23
 
 require (
+	github.com/go-chi/chi/v5 v5.2.1
 	github.com/spf13/cobra v1.8.1
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12

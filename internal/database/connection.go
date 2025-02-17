@@ -15,13 +15,15 @@ var Connection = &cobra.Command{
 	Short: "Database connection",
 	Long:  "Database connection",
 	Run: func(cmd *cobra.Command, args []string) {
-		ConnectDB()
+		connectDB()
+		deleteTables()
+		migrateDatabase()
 	},
 }
 
 var DB *gorm.DB
 
-func ConnectDB() {
+func connectDB() {
 	var (
 		host     = os.Getenv("DB_HOST")
 		port     = os.Getenv("DB_PORT")

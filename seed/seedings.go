@@ -22,10 +22,8 @@ var Seed = &cobra.Command{
 	Short: "Seed data",
 	Long:  "Seed data",
 	Run: func(cmd *cobra.Command, args []string) {
-		database.ConnectDB()
-		database.DeleteTables()
-		database.MigrateDatabase()
 		processMenu()
+		processUsersWithPurChaseHistory()
 	},
 }
 
@@ -166,7 +164,7 @@ func processUsersWithPurChaseHistory() {
 			CashBalance: user.CashBalance,
 		})
 		for _, purchaseHistory := range user.PurchaseHistory {
-			layout := "01/02/2006 03:04 PM"
+			layout := "01/02/2006 03:04 PM" //todo
 			parsedTime, err := time.Parse(layout, purchaseHistory.TransactionDate)
 			if err != nil {
 				fmt.Println("Error parsing date:", err)
