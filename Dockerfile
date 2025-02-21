@@ -1,16 +1,16 @@
-# Build Stage
-FROM golang:alpine3.20 AS builder
+FROM golang:alpine3.20
 
-WORKDIR /build
+WORKDIR /app
 
+# Copy dependencies and cache Go module downloads
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy the rest of the application code
 COPY . .
-RUN go build -o /app .
 
-# Final Stage
-FROM alpine:3.20
+# Build the Go application
+RUN go build -o app .
 
-COPY --from=builder /app /app
-CMD ["/app"]
+# Set the entry point for the container
+CMD ["./app"]

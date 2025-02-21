@@ -15,13 +15,15 @@ var Connection = &cobra.Command{
 	Short: "Database connection",
 	Long:  "Database connection",
 	Run: func(cmd *cobra.Command, args []string) {
-		connection()
+		ConnectDB()
+		deleteTables()
+		migrateDatabase()
 	},
 }
 
 var DB *gorm.DB
 
-func connection() {
+func ConnectDB() {
 	var (
 		host     = os.Getenv("DB_HOST")
 		port     = os.Getenv("DB_PORT")
@@ -29,7 +31,6 @@ func connection() {
 		password = os.Getenv("DB_PASSWORD")
 		dbname   = os.Getenv("DB_NAME")
 	)
-
 	dns := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		user,
 		password,
@@ -47,33 +48,19 @@ func connection() {
 			time.Sleep(5 * time.Second)
 		} else {
 			log.Println("Successfully connected to database")
-			fmt.Println(DB)
 			break
 		}
 	}
-	// Auto-migrate the User table
-	err := DB.AutoMigrate(&User{})
+}
+
+func CloseDB() {
+	db, err := DB.DB()
 	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+		fmt.Println("Error retrieve database: ", err)
 	}
-
-	// Create a new user
-	newUser := User{UserName: "John Doe", CashBalance: 15}
-	result := DB.Create(&newUser)
-	if result.Error != nil {
-		log.Fatalf("Failed to create user: %v", result.Error)
+	err = db.Close()
+	if err != nil {
+		fmt.Println("Error closing database: ", err)
 	}
-	log.Println("User created:", newUser)
-
-	newUser = User{UserName: "Sohan", CashBalance: 1015}
-	result = DB.Create(&newUser)
-	if result.Error != nil {
-		log.Fatalf("Failed to create user: %v", result.Error)
-	}
-	log.Println("User created:", newUser)
-
-	// Retrieve users
-	var users []User
-	DB.Find(&users)
-	log.Println("Users:", users)
+	fmt.Println("Successfully closed database")
 }
