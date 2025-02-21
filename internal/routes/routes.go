@@ -20,9 +20,7 @@ func AddRoute(db *gorm.DB) {
 
 	r.Route("/restaurants", func(r chi.Router) {
 		r.Get("/open", handlers.GetOpenRestaurants(db))
-		r.Get("/top", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("List of posts"))
-		})
+		r.Get("/top", handlers.ListTopRestaurants(db))
 	})
 
 	r.Get("/search", func(w http.ResponseWriter, r *http.Request) {})
