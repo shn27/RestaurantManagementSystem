@@ -24,7 +24,7 @@ func AddRoute(db *gorm.DB) {
 	})
 
 	r.Get("/search", func(w http.ResponseWriter, r *http.Request) {})
-	r.Post("/purchase", func(w http.ResponseWriter, r *http.Request) {})
+	r.Post("/purchase", handlers.ProcessPurchase(db))
 
 	err := http.ListenAndServe(":8080", r)
 	if err != nil {
