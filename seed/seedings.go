@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const TEST_FILEPATH_USERS_WITH_PURCHASE_HISTORY = "../data/users_with_purchase_history.json"
+const TEST_FILEPATH_RESTAURANT_WITH_MENU = "../data/restaurant_with_menu.json"
 const FILEPATH_USERS_WITH_PURCHASE_HISTORY = "data/users_with_purchase_history.json"
 const FILEPATH_RESTAURANT_WITH_MENU = "data/restaurant_with_menu.json"
 
@@ -22,6 +24,7 @@ var Seed = &cobra.Command{
 	Short: "Seed data",
 	Long:  "Seed data",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Seed data ...")
 		processMenu()
 		processUsersWithPurChaseHistory()
 	},
@@ -109,8 +112,9 @@ func processMenu() {
 
 	var menuData []database.Menu
 	var restaurantsData []database.Restaurant
-	var OpeningHoursData []database.OpeningHours
+	var openingHoursData []database.OpeningHours
 
+	batchSize := 100
 	restaurantID := 0
 	for _, restaurant := range restaurants {
 		restaurantsData = append(restaurantsData, database.Restaurant{
@@ -125,11 +129,39 @@ func processMenu() {
 				Price:        menu.Price,
 			})
 		}
-		OpeningHoursData = append(OpeningHoursData, processOpeningHours(restaurant.OpeningHours, restaurantID)...)
+		openingHoursData = append(openingHoursData, processOpeningHours(restaurant.OpeningHours, restaurantID)...)
+		if len(openingHoursData) >= batchSize {
+			err := database.DB.Create(&restaurantsData)
+			if err.Error != nil {
+				fmt.Println("Error inserting data into restaurant table:", err.Error)
+			}
+			err = database.DB.Create(&menuData)
+			if err.Error != nil {
+				fmt.Println("Error inserting data into menu table: :", err.Error)
+			}
+			err = database.DB.Create(&openingHoursData)
+			if err.Error != nil {
+				fmt.Println("Error inserting data into openingHours table::", err.Error)
+			}
+			restaurantsData = nil
+			menuData = nil
+			openingHoursData = nil
+		}
 	}
-	database.DB.Create(&restaurantsData)
-	database.DB.Create(&menuData)
-	database.DB.Create(&OpeningHoursData)
+	if len(openingHoursData) > 0 {
+		err := database.DB.Create(&restaurantsData)
+		if err.Error != nil {
+			fmt.Println("Error inserting data into restaurant table:", err.Error)
+		}
+		err = database.DB.Create(&menuData)
+		if err.Error != nil {
+			fmt.Println("Error inserting data into menu table: :", err.Error)
+		}
+		err = database.DB.Create(&openingHoursData)
+		if err.Error != nil {
+			fmt.Println("Error inserting data into openingHours table::", err.Error)
+		}
+	}
 	fmt.Println("Successfully processed menu!")
 }
 
@@ -157,12 +189,15 @@ func processUsersWithPurChaseHistory() {
 	var purchaseHistoryData []database.PurchaseHistory
 	var usersData []database.User
 
+	batchSize := 100
 	for _, user := range users {
 		usersData = append(usersData, database.User{
 			ID:          uint(user.ID),
 			UserName:    user.Name,
 			CashBalance: user.CashBalance,
 		})
+
+		flag := false
 		for _, purchaseHistory := range user.PurchaseHistory {
 			layout := "01/02/2006 03:04 PM" //todo
 			parsedTime, err := time.Parse(layout, purchaseHistory.TransactionDate)
@@ -177,9 +212,38 @@ func processUsersWithPurChaseHistory() {
 				TransactionAmount: purchaseHistory.TransactionAmount,
 				Time:              parsedTime,
 			})
+			if len(purchaseHistoryData) >= batchSize {
+				if !flag {
+					flag = true
+					err := database.DB.Create(&usersData)
+					if err.Error != nil {
+						fmt.Println("Error inserting data into users table:", err.Error)
+					}
+				}
+				err := database.DB.Create(&purchaseHistoryData)
+				if err.Error != nil {
+					fmt.Println("Error inserting data into purchase history table:", err.Error)
+				}
+				purchaseHistoryData = nil
+			}
+		}
+		if flag {
+			usersData = nil
 		}
 	}
-	database.DB.Create(&usersData)
-	database.DB.Create(&purchaseHistoryData)
+	if len(usersData) > 0 {
+		err := database.DB.Create(&usersData)
+		if err.Error != nil {
+			fmt.Println("Error inserting data into users table === :", err.Error)
+		}
+	}
+
+	if len(purchaseHistoryData) > 0 {
+		err := database.DB.Create(&purchaseHistoryData)
+		if err.Error != nil {
+			fmt.Println("Error inserting data into purchase history table === :", err.Error)
+		}
+	}
+
 	fmt.Println("Successfully processed purchase history!")
 }

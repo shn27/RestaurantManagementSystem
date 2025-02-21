@@ -1,6 +1,8 @@
 package database
 
-import "log"
+import (
+	"fmt"
+)
 
 func deleteTables() {
 	err := DB.Migrator().DropTable(
@@ -11,7 +13,7 @@ func deleteTables() {
 		&Menu{},
 	)
 	if err != nil {
-		log.Fatalf("Failed to delete databases: %v", err)
+		fmt.Println("Failed to delete databases: %v", err)
 	}
 }
 
@@ -24,6 +26,6 @@ func migrateDatabase() {
 		&Menu{},
 	)
 	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+		fmt.Println("Failed to migrate database: %v", err)
 	}
 }

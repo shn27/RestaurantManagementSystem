@@ -15,7 +15,7 @@ var Connection = &cobra.Command{
 	Short: "Database connection",
 	Long:  "Database connection",
 	Run: func(cmd *cobra.Command, args []string) {
-		connectDB()
+		ConnectDB()
 		deleteTables()
 		migrateDatabase()
 	},
@@ -23,7 +23,7 @@ var Connection = &cobra.Command{
 
 var DB *gorm.DB
 
-func connectDB() {
+func ConnectDB() {
 	var (
 		host     = os.Getenv("DB_HOST")
 		port     = os.Getenv("DB_PORT")
@@ -51,4 +51,16 @@ func connectDB() {
 			break
 		}
 	}
+}
+
+func CloseDB() {
+	db, err := DB.DB()
+	if err != nil {
+		fmt.Println("Error retrieve database: ", err)
+	}
+	err = db.Close()
+	if err != nil {
+		fmt.Println("Error closing database: ", err)
+	}
+	fmt.Println("Successfully closed database")
 }
