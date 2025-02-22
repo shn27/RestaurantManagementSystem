@@ -15,6 +15,7 @@ var main = &cobra.Command{
 	Long:  `RestaurantManagementSystem`,
 	Run: func(cmd *cobra.Command, args []string) {
 		database.ConnectDB()
+		database.ConnectRedis()
 		routes.AddRoute(database.DB)
 	},
 }

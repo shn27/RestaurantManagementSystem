@@ -13,9 +13,12 @@ services:
       - DB_USER=root
       - DB_PASSWORD=password
       - DB_NAME=test
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
+      - redis
     networks:
       - go-network
 
@@ -35,6 +38,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  redis:
+    container_name: "redis"
+    restart: always
+    image: redis:alpine
+    # Specify the redis.conf file to use and add a password.
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass mypassword
+    ports:
+      - "6379:6379"
+    # map the volumes to that redis has the custom conf file from this project.
+    volumes:
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - go-network
 
 volumes:
   dbdata:

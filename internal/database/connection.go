@@ -1,7 +1,9 @@
 package database
 
 import (
+	"context"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -22,6 +24,7 @@ var Connection = &cobra.Command{
 }
 
 var DB *gorm.DB
+var RedisClient *redis.Client
 
 func ConnectDB() {
 	var (
@@ -63,4 +66,19 @@ func CloseDB() {
 		fmt.Println("Error closing database: ", err)
 	}
 	fmt.Println("Successfully closed database")
+}
+
+func ConnectRedis() {
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "mypassword",
+		DB:       0,
+	})
+	_, err := RedisClient.Ping(context.Background()).Result()
+	if err != nil {
+		fmt.Println(err)
+		return
+	} else {
+		fmt.Println("Successfully connected to redis")
+	}
 }
