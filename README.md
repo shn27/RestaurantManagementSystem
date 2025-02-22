@@ -7,6 +7,7 @@ docker compose -f compose.yaml up
 
 # Current work progress
 1. parse TransactionDate of purchase history (todo)
+2. write README
 
 # To-DO
 
@@ -21,57 +22,57 @@ docker compose -f compose.yaml up
 
 # Tables
 Tables in the database:
-go-api    |
-go-api    | Table: menus
-go-api    | Columns:
-go-api    |  - id
-go-api    |  - restaurant_id
-go-api    |  - dish_name
-go-api    |  - price
-go-api    |  - created_at
-go-api    |  - updated_at
-go-api    |  - deleted_at
-go-api    |
-go-api    | Table: opening_hours
-go-api    | Columns:
-go-api    |  - id
-go-api    |  - restaurant_id
-go-api    |  - day
-go-api    |  - opening_time
-go-api    |  - closing_time
-go-api    |  - created_at
-go-api    |  - updated_at
-go-api    |  - deleted_at
-go-api    |
-go-api    | Table: purchase_histories
-go-api    | Columns:
-go-api    |  - id
-go-api    |  - user_id
-go-api    |  - dish_name
-go-api    |  - restaurant_name
-go-api    |  - transaction_amount
-go-api    |  - time
-go-api    |  - created_at
-go-api    |  - updated_at
-go-api    |  - deleted_at
-go-api    |
-go-api    | Table: restaurants
-go-api    | Columns:
-go-api    |  - id
-go-api    |  - restaurant_name
-go-api    |  - cash_balance
-go-api    |  - created_at
-go-api    |  - updated_at
-go-api    |  - deleted_at
-go-api    |
-go-api    | Table: users
-go-api    | Columns:
-go-api    |  - id
-go-api    |  - user_name
-go-api    |  - cash_balance
-go-api    |  - created_at
-go-api    |  - updated_at
-go-api    |  - deleted_at
+
+  Table: menus
+  Columns:
+   - id
+   - restaurant_id
+   - dish_name
+   - price
+   - created_at
+   - updated_at
+   - deleted_at
+ 
+  Table: opening_hours
+  Columns:
+   - id
+   - restaurant_id
+   - day
+   - opening_time
+   - closing_time
+   - created_at
+   - updated_at
+   - deleted_at
+ 
+  Table: purchase_histories
+  Columns:
+   - id
+   - user_id
+   - dish_name
+   - restaurant_name
+   - transaction_amount
+   - time
+   - created_at
+   - updated_at
+   - deleted_at
+ 
+  Table: restaurants
+  Columns:
+   - id
+   - restaurant_name
+   - cash_balance
+   - created_at
+   - updated_at
+   - deleted_at
+ 
+  Table: users
+  Columns:
+   - id
+   - user_name
+   - cash_balance
+   - created_at
+   - updated_at
+   - deleted_at
 
 
 # Help

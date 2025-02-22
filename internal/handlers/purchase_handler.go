@@ -5,6 +5,7 @@ import (
 	"github.com/shn27/RestaurantManagementSystem/internal/database"
 	"gorm.io/gorm"
 	"net/http"
+	"time"
 )
 
 func ProcessPurchase(db *gorm.DB) http.HandlerFunc {
@@ -48,6 +49,18 @@ func ProcessPurchase(db *gorm.DB) http.HandlerFunc {
 			if err := tx.Model(&restaurant).Update("cash_balance", restaurant.CashBalance+dish.Price).Error; err != nil {
 				return err
 			}
+
+			purchaseHistory := database.PurchaseHistory{
+				UserID:            user.ID,
+				DishName:          dish.DishName,
+				RestaurantName:    restaurant.RestaurantName,
+				TransactionAmount: dish.Price,
+				Time:              time.Now(),
+			}
+			if err := tx.Create(&purchaseHistory).Error; err != nil {
+				return err
+			}
+
 			return nil // Commit transaction if everything is fine
 		})
 
