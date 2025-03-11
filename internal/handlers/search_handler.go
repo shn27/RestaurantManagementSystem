@@ -8,7 +8,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/shn27/RestaurantManagementSystem/internal/database"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -32,7 +31,6 @@ func Search(esClient *elasticsearch.Client, indexName string) http.HandlerFunc {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		fmt.Println("cache miss ", cacheKey)
 
 		searchBody := map[string]interface{}{
 			"query": map[string]interface{}{
@@ -45,7 +43,8 @@ func Search(esClient *elasticsearch.Client, indexName string) http.HandlerFunc {
 
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(searchBody); err != nil {
-			log.Fatalf("Error encoding search query: %v", err)
+			http.Error(w, "Error encoding search query", http.StatusInternalServerError)
+			return
 		}
 
 		res, err := esClient.Search(
@@ -56,7 +55,8 @@ func Search(esClient *elasticsearch.Client, indexName string) http.HandlerFunc {
 			esClient.Search.WithPretty(),
 		)
 		if err != nil {
-			log.Fatalf("Search error: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		defer res.Body.Close()
 

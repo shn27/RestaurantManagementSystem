@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -11,7 +10,6 @@ import (
 )
 
 func AddRoute(db *gorm.DB, es *elasticsearch.Client) {
-	fmt.Println("AddRoutes Called")
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)

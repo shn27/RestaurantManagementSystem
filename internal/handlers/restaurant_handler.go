@@ -36,14 +36,12 @@ func GetOpenRestaurants(db *gorm.DB) http.HandlerFunc {
 		ctx := context.Background()
 		cachedData, err := database.RedisClient.Get(ctx, cacheKey).Result()
 		if err == nil {
-			// Cache hit: return cached data
 			w.Header().Set("Content-Type", "application/json")
 			w.Write([]byte(cachedData))
 			w.WriteHeader(http.StatusOK)
 			fmt.Println("cache hit")
 			return
 		}
-		fmt.Println("cache miss ", cacheKey)
 
 		var restaurantNames []string
 		query := `
@@ -145,7 +143,6 @@ func ListTopRestaurants(db *gorm.DB) http.HandlerFunc {
 			fmt.Println("cache hit")
 			return
 		}
-		fmt.Println("cache miss")
 
 		var restaurantNames []string
 		query := `
