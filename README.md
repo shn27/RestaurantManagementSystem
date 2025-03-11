@@ -193,4 +193,5 @@ Tables in the database:
 
 # Help
 https://dev.to/pradumnasaraf/dockerizing-a-golang-api-with-mysql-and-adding-docker-compose-support-9b1
-
+https://tutorialedge.net/golang/go-redis-tutorial/
+https://www.freecodecamp.org/news/go-elasticsearch/

@@ -113,6 +113,7 @@ func processMenu() {
 	var menuData []database.Menu
 	var restaurantsData []database.Restaurant
 	var openingHoursData []database.OpeningHours
+	var restaurantMenuNamesEs []map[string]interface{}
 
 	batchSize := 100
 	restaurantID := 0
@@ -122,14 +123,23 @@ func processMenu() {
 			CashBalance:    restaurant.CashBalance,
 		})
 		restaurantID++
+		restaurantMenuNamesEs = append(restaurantMenuNamesEs, map[string]interface{}{
+			"name": restaurant.RestaurantName,
+			"type": "restaurant",
+		})
 		for _, menu := range restaurant.Menu {
 			menuData = append(menuData, database.Menu{
 				RestaurantID: uint(restaurantID),
 				DishName:     menu.DishName,
 				Price:        menu.Price,
 			})
+			restaurantMenuNamesEs = append(restaurantMenuNamesEs, map[string]interface{}{
+				"name": menu.DishName,
+				"type": "dish",
+			})
 		}
 		openingHoursData = append(openingHoursData, processOpeningHours(restaurant.OpeningHours, restaurantID)...)
+
 		if len(openingHoursData) >= batchSize {
 			err := database.DB.Create(&restaurantsData)
 			if err.Error != nil {
@@ -162,6 +172,12 @@ func processMenu() {
 			fmt.Println("Error inserting data into openingHours table::", err.Error)
 		}
 	}
+
+	es := database.EsClient
+
+	utils.CreateIndex(es, "names")
+	utils.InsertDataEs(es, "names", restaurantMenuNamesEs)
+
 	fmt.Println("Successfully processed menu!")
 }
 

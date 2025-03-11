@@ -15,7 +15,7 @@ var main = &cobra.Command{
 	Long:  `RestaurantManagementSystem`,
 	Run: func(cmd *cobra.Command, args []string) {
 		database.ConnectDB()
-		routes.AddRoute(database.DB)
+		routes.AddRoute(database.DB, database.EsClient)
 	},
 }
 
@@ -24,11 +24,14 @@ var InitializeDB = &cobra.Command{
 	Short: "DB",
 	Long:  `DB`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Initialize DB called ...")
+		fmt.Println("Initializing database...")
 		if err := database.Connection.Execute(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+		database.ConnectRedis()
+		database.ConnectElasticsearch()
+
 		if err := seed.Seed.Execute(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)

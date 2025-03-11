@@ -13,9 +13,13 @@ services:
       - DB_USER=root
       - DB_PASSWORD=password
       - DB_NAME=test
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
+      - redis
+      - elasticsearch
     networks:
       - go-network
 
@@ -36,7 +40,43 @@ services:
       timeout: 5s
       retries: 3
 
+  redis:
+    container_name: "redis"
+    restart: always
+    image: redis:alpine
+    # Specify the redis.conf file to use and add a password.
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass mypassword
+    ports:
+      - "6379:6379"
+    # map the volumes to that redis has the custom conf file from this project.
+    volumes:
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - go-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+    expose:
+      - "9200" # This allows internal access from other services without exposing externally
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - go-network
+
 volumes:
+  elasticsearch_data:  # Define persistent volume
+    driver: local
   dbdata:
 
 networks:

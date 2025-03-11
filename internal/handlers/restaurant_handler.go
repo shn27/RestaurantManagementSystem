@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/shn27/RestaurantManagementSystem/internal/database"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
@@ -27,6 +29,20 @@ func GetOpenRestaurants(db *gorm.DB) http.HandlerFunc {
 		dayName = strings.ToLower(dayName)
 		currentTime := t.Format("15:04:05")
 
+		// Create Redis cache key
+		cacheKey := fmt.Sprintf("open_restaurants:%s:%s", dayName, currentTime)
+
+		// Check Redis for cached data
+		ctx := context.Background()
+		cachedData, err := database.RedisClient.Get(ctx, cacheKey).Result()
+		if err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(cachedData))
+			w.WriteHeader(http.StatusOK)
+			fmt.Println("cache hit")
+			return
+		}
+
 		var restaurantNames []string
 		query := `
 SELECT r.restaurant_name
@@ -44,6 +60,12 @@ AND ? BETWEEN oh.opening_time AND oh.closing_time;
 			"open_restaurants": restaurantNames,
 		}
 		responseJSON, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		database.RedisClient.Set(context.Background(), cacheKey, responseJSON, 0)
+
 		w.Write(responseJSON)
 		w.WriteHeader(http.StatusOK)
 	}
@@ -106,6 +128,22 @@ func ListTopRestaurants(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
+		// Create Redis cache key
+		cacheKey := fmt.Sprintf("top_restaurants:numDish=%d:minPrice=%.2f:maxPrice=%.2f:isMore=%v:limit=%d",
+			numDish, minPrice, maxPrice, isMore, limit)
+
+		// Check Redis for cached data
+		ctx := context.Background()
+		cachedData, err := database.RedisClient.Get(ctx, cacheKey).Result()
+		if err == nil {
+			// Cache hit: return cached data
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(cachedData))
+			w.WriteHeader(http.StatusOK)
+			fmt.Println("cache hit")
+			return
+		}
+
 		var restaurantNames []string
 		query := `
 SELECT r.restaurant_name
@@ -152,6 +190,10 @@ LIMIT ?;
 			"open_restaurants": restaurantNames,
 		}
 		responseJSON, err := json.Marshal(response)
+
+		// add cache
+		database.RedisClient.Set(context.Background(), cacheKey, responseJSON, 0)
+
 		w.Write(responseJSON)
 		w.WriteHeader(http.StatusOK)
 	}
