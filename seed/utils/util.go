@@ -1,7 +1,12 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/elastic/go-elasticsearch/v7"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -105,4 +110,45 @@ func CheckValidity(day string, closingTime string, openingTime string, openingTi
 	}
 
 	return true, day, hour, min, hour1, min1
+}
+
+func CreateIndex(esClient *elasticsearch.Client, indexName string) {
+	mapping := `{
+		"mappings": {
+			"properties": {
+				"name": { "type": "text" },
+				"type": { "type": "keyword" }
+			}
+		}
+	}`
+	res, err := esClient.Indices.Create(indexName, esClient.Indices.Create.WithBody(strings.NewReader(mapping)))
+	if err != nil {
+		log.Fatalf("Error creating index: %v", err)
+	}
+	defer res.Body.Close()
+
+	fmt.Println("Index created successfully")
+}
+
+func InsertDataEs(esClient *elasticsearch.Client, indexName string, data []map[string]interface{}) {
+	var buf bytes.Buffer
+	for _, item := range data {
+		meta := []byte(`{ "index": {} }` + "\n")
+		jsonData, err := json.Marshal(item)
+		if err != nil {
+			log.Fatalf("Error marshalling data: %v", err)
+		}
+		jsonData = append(jsonData, '\n')
+
+		buf.Write(meta)
+		buf.Write(jsonData)
+	}
+
+	res, err := esClient.Bulk(bytes.NewReader(buf.Bytes()), esClient.Bulk.WithIndex(indexName))
+	if err != nil {
+		log.Fatalf("Error inserting data: %v", err)
+	}
+	defer res.Body.Close()
+
+	fmt.Println("Data inserted successfully")
 }

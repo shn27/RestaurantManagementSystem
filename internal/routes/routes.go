@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/shn27/RestaurantManagementSystem/internal/handlers"
@@ -9,7 +10,7 @@ import (
 	"net/http"
 )
 
-func AddRoute(db *gorm.DB) {
+func AddRoute(db *gorm.DB, es *elasticsearch.Client) {
 	fmt.Println("AddRoutes Called")
 	r := chi.NewRouter()
 
@@ -23,7 +24,7 @@ func AddRoute(db *gorm.DB) {
 		r.Get("/top", handlers.ListTopRestaurants(db))
 	})
 
-	r.Get("/search", func(w http.ResponseWriter, r *http.Request) {})
+	r.Get("/search", handlers.Search(es, "names"))
 	r.Post("/purchase", handlers.ProcessPurchase(db))
 
 	err := http.ListenAndServe(":8080", r)

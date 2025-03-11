@@ -19,6 +19,7 @@ services:
     depends_on:
       - mysql
       - redis
+      - elasticsearch
     networks:
       - go-network
 
@@ -53,7 +54,29 @@ services:
     networks:
       - go-network
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+    expose:
+      - "9200" # This allows internal access from other services without exposing externally
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - go-network
+
 volumes:
+  elasticsearch_data:  # Define persistent volume
+    driver: local
   dbdata:
 
 networks:

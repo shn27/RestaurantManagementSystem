@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
 	"gorm.io/driver/mysql"
@@ -81,4 +82,62 @@ func ConnectRedis() {
 	} else {
 		fmt.Println("Successfully connected to redis")
 	}
+}
+
+func CloseRedis() {
+	err := RedisClient.Close()
+	if err != nil {
+		fmt.Println("Error closing redis: ", err)
+		return
+	}
+	fmt.Println("Successfully closed redis")
+}
+
+var EsClient *elasticsearch.Client
+
+func ConnectElasticsearch() {
+	fmt.Println("Connecting to Elasticsearch...")
+	var err error
+	for {
+		EsClient, err = elasticsearch.NewClient(elasticsearch.Config{
+			Addresses: []string{
+				"http://elasticsearch:9200", // e.g., "http://localhost:9200"
+			},
+		})
+		if err != nil {
+			log.Println("Error creating the client: ", err)
+			log.Println("Retrying in 5 seconds...")
+			time.Sleep(5 * time.Second)
+		} else {
+			log.Println("Connected to Elasticsearch Client")
+			break
+		}
+	}
+	res, err := EsClient.Info()
+	if err != nil {
+		log.Println("Error getting Elasticsearch info: ", err)
+	}
+	if err != nil {
+		for {
+			res, err = EsClient.Info()
+			if err != nil {
+				log.Println("Error getting Elasticsearch info: ", err)
+				log.Println("Retrying in 5 seconds...")
+				time.Sleep(5 * time.Second)
+			} else {
+				break
+			}
+		}
+	}
+	defer res.Body.Close()
+	log.Println("Successfully connected to Elasticsearch")
+}
+
+func CloseEsClient() {
+	err := EsClient.ClosePointInTime
+	if err != nil {
+		fmt.Println("Error closing redis: ", err)
+		return
+	}
+	fmt.Println("Successfully closed redis")
 }
