@@ -3,6 +3,7 @@
 A pet project. Basic REST API practise with some CRUD operation.
 
 # How to run
+docker-compose exec db /bin/sh -c "mysql -u<user-name> -p<password> -e 'CREATE DATABASE IF NOT EXISTS food_delivery;'"
 docker compose -f compose.yaml up
 
 # To-DO

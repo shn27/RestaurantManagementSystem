@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/shn27/RestaurantManagementSystem/internal/database"
+	"go.opentelemetry.io/otel"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
@@ -14,6 +15,12 @@ import (
 
 func GetOpenRestaurants(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Add tracing
+		ctx := r.Context()
+		tr := otel.Tracer("chi-handler")
+		_, span := tr.Start(ctx, "get-open-restaurant-handler")
+		defer span.End()
+
 		datetime := r.URL.Query().Get("datetime")
 		if datetime == "" {
 			http.Error(w, "datetime query parameter is required", http.StatusBadRequest)
@@ -33,7 +40,8 @@ func GetOpenRestaurants(db *gorm.DB) http.HandlerFunc {
 		cacheKey := fmt.Sprintf("open_restaurants:%s:%s", dayName, currentTime)
 
 		// Check Redis for cached data
-		ctx := context.Background()
+		ctx = context.Background()
+		span.AddEvent("Starting Redis query")
 		cachedData, err := database.RedisClient.Get(ctx, cacheKey).Result()
 		if err == nil {
 			w.Header().Set("Content-Type", "application/json")
@@ -51,8 +59,10 @@ JOIN opening_hours oh ON r.id = oh.restaurant_id
 WHERE oh.day = ?
 AND ? BETWEEN oh.opening_time AND oh.closing_time;
 `
+		span.AddEvent("Starting DB query")
 		err = db.Raw(query, dayName, currentTime).Scan(&restaurantNames).Error
 		if err != nil {
+			span.RecordError(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -61,6 +71,7 @@ AND ? BETWEEN oh.opening_time AND oh.closing_time;
 		}
 		responseJSON, err := json.Marshal(response)
 		if err != nil {
+			span.RecordError(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -73,6 +84,12 @@ AND ? BETWEEN oh.opening_time AND oh.closing_time;
 
 func ListTopRestaurants(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// add tracing
+		ctx := r.Context()
+		tr := otel.Tracer("chi-handler")
+		_, span := tr.Start(ctx, "list-top-restaurants-handler")
+		defer span.End()
+
 		minPrice := r.URL.Query().Get("minPrice")
 		if minPrice == "" {
 			http.Error(w, "minPrice query parameter is required", http.StatusBadRequest)
@@ -133,7 +150,7 @@ func ListTopRestaurants(db *gorm.DB) http.HandlerFunc {
 			numDish, minPrice, maxPrice, isMore, limit)
 
 		// Check Redis for cached data
-		ctx := context.Background()
+		ctx = context.Background()
 		cachedData, err := database.RedisClient.Get(ctx, cacheKey).Result()
 		if err == nil {
 			// Cache hit: return cached data

@@ -1,16 +1,30 @@
 package routes
 
 import (
+	"context"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/riandyrn/otelchi"
 	"github.com/shn27/RestaurantManagementSystem/internal/handlers"
+	"github.com/shn27/RestaurantManagementSystem/internal/tracing"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 )
 
 func AddRoute(db *gorm.DB, es *elasticsearch.Client) {
+	shutdown := tracing.InitTracer("chi-service")
+	defer func() {
+		if err := shutdown(context.Background()); err != nil {
+			log.Fatalf("failed to shutdown tracer: %v", err)
+		}
+	}()
+
 	r := chi.NewRouter()
+
+	// Add the OpenTelemetry middleware
+	r.Use(otelchi.Middleware("chi-service"))
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
