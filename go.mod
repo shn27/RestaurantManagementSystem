@@ -10,8 +10,9 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/riandyrn/otelchi v0.12.1
 	github.com/spf13/cobra v1.8.1
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
 	go.opentelemetry.io/otel v1.37.0
-	go.opentelemetry.io/otel/exporters/jaeger v1.17.0
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.37.0
 	go.opentelemetry.io/otel/sdk v1.37.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12

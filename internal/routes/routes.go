@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"context"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -14,9 +13,9 @@ import (
 )
 
 func AddRoute(db *gorm.DB, es *elasticsearch.Client) {
-	shutdown := tracing.InitTracer("chi-service")
+	shutdown := tracing.InitTracer()
 	defer func() {
-		if err := shutdown(context.Background()); err != nil {
+		if err := shutdown; err != nil {
 			log.Fatalf("failed to shutdown tracer: %v", err)
 		}
 	}()
