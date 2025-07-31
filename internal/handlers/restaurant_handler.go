@@ -17,7 +17,7 @@ func GetOpenRestaurants(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Add tracing
 		ctx := r.Context()
-		tr := otel.Tracer("chi-handler")
+		tr := otel.Tracer("restaurant-service")
 		_, span := tr.Start(ctx, "get-open-restaurant-handler")
 		defer span.End()
 
@@ -42,14 +42,17 @@ func GetOpenRestaurants(db *gorm.DB) http.HandlerFunc {
 		// Check Redis for cached data
 		ctx = context.Background()
 		span.AddEvent("Starting Redis query")
+		ctx, redisSpan := otel.Tracer("restaurant-service").Start(ctx, "REDIS: FetchTopRestaurants")
 		cachedData, err := database.RedisClient.Get(ctx, cacheKey).Result()
 		if err == nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.Write([]byte(cachedData))
 			w.WriteHeader(http.StatusOK)
 			fmt.Println("cache hit")
+			redisSpan.End()
 			return
 		}
+		redisSpan.End()
 
 		var restaurantNames []string
 		query := `
@@ -60,12 +63,16 @@ WHERE oh.day = ?
 AND ? BETWEEN oh.opening_time AND oh.closing_time;
 `
 		span.AddEvent("Starting DB query")
+		// Create a sub-span for the DB query
+		ctx, dbSpan := otel.Tracer("restaurant-service").Start(ctx, "DB: FetchTopRestaurants")
+
 		err = db.Raw(query, dayName, currentTime).Scan(&restaurantNames).Error
 		if err != nil {
 			span.RecordError(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		dbSpan.End()
 		response := map[string]interface{}{
 			"open_restaurants": restaurantNames,
 		}
