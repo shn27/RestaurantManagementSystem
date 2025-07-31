@@ -2,9 +2,24 @@
 
 A pet project. Basic REST API practise with some CRUD operation.
 
+## Set Environment
+```azure
+DB_USER="root"
+DB_PASSWORD="password"
+DB_HOST="db"
+DB_PORT="3306"
+DB_NAME="food_delivery"
+PAGINATION_BATCH_SIZE="100"
+REDIS_HOST="redis"
+REDIS_PORT="6379"
+ELASTICSEARCH_URL="http://elasticsearch:9200"
+OTEL_EXPORTER_OTLP_ENDPOINT="jaeger:4317"
+```
+
 # How to run
-docker-compose exec db /bin/sh -c "mysql -u<user-name> -p<password> -e 'CREATE DATABASE IF NOT EXISTS food_delivery;'"
-docker compose -f compose.yaml up
+`docker compose -f compose.yaml up` 
+
+`docker exec -it db /bin/sh -c "mysql --host localhost -u<user-name> -p<password> -e 'CREATE DATABASE IF NOT EXISTS food_delivery;'"`
 
 # To-DO
 

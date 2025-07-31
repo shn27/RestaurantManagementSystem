@@ -16,6 +16,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
     depends_on:
       - mysql
       - redis
@@ -39,6 +40,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  jaeger:
+    container_name: go-jaeger
+    image: jaegertracing/all-in-one:1.52
+    ports:
+      - 16686:16686
+      - 4317:4317
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - go-network
 
   redis:
     container_name: "redis"
