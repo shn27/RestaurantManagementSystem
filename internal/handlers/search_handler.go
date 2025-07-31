@@ -7,14 +7,20 @@ import (
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/shn27/RestaurantManagementSystem/internal/database"
+	"go.opentelemetry.io/otel"
 	"io"
 	"net/http"
 )
 
 func Search(esClient *elasticsearch.Client, indexName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		tr := otel.Tracer("restaurant-service")
+		_, span := tr.Start(context.Background(), "search-restaurant-handler")
+		defer span.End()
+
 		query := r.URL.Query().Get("search")
 		if query == "" {
+			span.RecordError(fmt.Errorf("query is empty"))
 			http.Error(w, "search query parameter is required", http.StatusBadRequest)
 			return
 		}
@@ -22,6 +28,8 @@ func Search(esClient *elasticsearch.Client, indexName string) http.HandlerFunc {
 		// Create Redis cache key
 		cacheKey := fmt.Sprintf("search:%s", query)
 
+		_, redisSpan := tr.Start(context.Background(), "REDIS: FetchRestaurantsWithSearchTEXT")
+		defer span.End()
 		// Check Redis for cached data
 		ctx := context.Background()
 		cachedData, err := database.RedisClient.Get(ctx, cacheKey).Result()
@@ -29,9 +37,12 @@ func Search(esClient *elasticsearch.Client, indexName string) http.HandlerFunc {
 			w.Header().Set("Content-Type", "application/json")
 			w.Write([]byte(cachedData))
 			w.WriteHeader(http.StatusOK)
+			redisSpan.End()
 			return
 		}
+		redisSpan.End()
 
+		span.AddEvent("Search from Elasticsearch DB start")
 		searchBody := map[string]interface{}{
 			"query": map[string]interface{}{
 				"multi_match": map[string]interface{}{
@@ -43,6 +54,7 @@ func Search(esClient *elasticsearch.Client, indexName string) http.HandlerFunc {
 
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(searchBody); err != nil {
+			span.RecordError(err)
 			http.Error(w, "Error encoding search query", http.StatusInternalServerError)
 			return
 		}
@@ -55,6 +67,7 @@ func Search(esClient *elasticsearch.Client, indexName string) http.HandlerFunc {
 			esClient.Search.WithPretty(),
 		)
 		if err != nil {
+			span.RecordError(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

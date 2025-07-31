@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/shn27/RestaurantManagementSystem/internal/database"
+	"go.opentelemetry.io/otel"
 	"gorm.io/gorm"
 	"net/http"
 	"time"
@@ -10,6 +11,11 @@ import (
 
 func ProcessPurchase(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		tr := otel.Tracer("restaurant-service")
+		_, span := tr.Start(ctx, "process-purchase-handler")
+		defer span.End()
+
 		type purchaseRequest struct {
 			DishID int `json:"dish_id"`
 			UserID int `json:"user_id"`
@@ -20,6 +26,8 @@ func ProcessPurchase(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
+		_, dbSpan := tr.Start(ctx, "DB: startTransaction")
+		defer dbSpan.End()
 		// Use a GORM transaction to ensure atomicity
 		err := db.Transaction(func(tx *gorm.DB) error {
 			var user database.User
@@ -65,6 +73,7 @@ func ProcessPurchase(db *gorm.DB) http.HandlerFunc {
 		})
 
 		if err != nil {
+			dbSpan.RecordError(err)
 			http.Error(w, "Transaction failed", http.StatusInternalServerError)
 			return
 		}

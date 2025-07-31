@@ -42,16 +42,17 @@ func GetOpenRestaurants(db *gorm.DB) http.HandlerFunc {
 		// Check Redis for cached data
 		ctx = context.Background()
 		span.AddEvent("Starting Redis query")
-		ctx, redisSpan := otel.Tracer("restaurant-service").Start(ctx, "REDIS: FetchTopRestaurants")
+		ctx, redisSpan := otel.Tracer("restaurant-service").Start(ctx, "REDIS: FetchOpenRestaurants")
 		cachedData, err := database.RedisClient.Get(ctx, cacheKey).Result()
 		if err == nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.Write([]byte(cachedData))
 			w.WriteHeader(http.StatusOK)
-			fmt.Println("cache hit")
+			redisSpan.AddEvent("Cache hit")
 			redisSpan.End()
 			return
 		}
+		redisSpan.AddEvent("Cache miss")
 		redisSpan.End()
 
 		var restaurantNames []string
@@ -152,6 +153,9 @@ func ListTopRestaurants(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
+		span.AddEvent("Starting Redis query")
+		ctx, redisSpan := otel.Tracer("restaurant-service").Start(ctx, "REDIS: FetchTopRestaurants")
+
 		// Create Redis cache key
 		cacheKey := fmt.Sprintf("top_restaurants:numDish=%d:minPrice=%.2f:maxPrice=%.2f:isMore=%v:limit=%d",
 			numDish, minPrice, maxPrice, isMore, limit)
@@ -164,9 +168,12 @@ func ListTopRestaurants(db *gorm.DB) http.HandlerFunc {
 			w.Header().Set("Content-Type", "application/json")
 			w.Write([]byte(cachedData))
 			w.WriteHeader(http.StatusOK)
-			fmt.Println("cache hit")
+			redisSpan.AddEvent("Cache hit")
+			redisSpan.End()
 			return
 		}
+		redisSpan.AddEvent("Cache miss")
+		redisSpan.End()
 
 		var restaurantNames []string
 		query := `
@@ -196,20 +203,26 @@ WHERE m.dish_count < ?
 ORDER BY r.restaurant_name ASC
 LIMIT ?;
 `
+		span.AddEvent("Starting DB query")
+		// Create a sub-span for the DB query
+		ctx, dbSpan := otel.Tracer("restaurant-service").Start(ctx, "DB: FetchTopRestaurants")
+
 		if isMoreBool {
 			err = db.Raw(query, float64(minPriceInt), float64(maxPriceInt), numDishInt, limitInt).Scan(&restaurantNames).Error
 			if err != nil {
+				dbSpan.RecordError(err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			err = db.Raw(query1, float64(minPriceInt), float64(maxPriceInt), numDishInt, limitInt).Scan(&restaurantNames).Error
 			if err != nil {
+				dbSpan.RecordError(err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
-
+		dbSpan.End()
 		response := map[string]interface{}{
 			"open_restaurants": restaurantNames,
 		}
