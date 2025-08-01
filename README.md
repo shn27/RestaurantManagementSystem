@@ -148,6 +148,15 @@ We have modified the dataset if necessary and doable. Based on modified dataset 
 
 ![Database Schema](./data/Resturant%20Management%20System.svg)
 
+
+# Monitoring
+## Tracing
+Add Jaegar for tracing.
+```
+http://localhost:16686
+```
+
+
 # Help
 https://dev.to/pradumnasaraf/dockerizing-a-golang-api-with-mysql-and-adding-docker-compose-support-9b1
 https://tutorialedge.net/golang/go-redis-tutorial/
