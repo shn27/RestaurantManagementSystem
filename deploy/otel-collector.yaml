@@ -1,0 +1,33 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-collector
+  namespace: observability
+spec:
+  mode: deployment
+  image: ghcr.io/open-telemetry/opentelemetry-collector-contrib:latest  # Required for Jaeger exporter
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:  # Port 4317
+          http:  # Port 4318
+
+    exporters:
+      # Option 1: Direct Jaeger exporter (recommended for Jaeger)
+      jaeger:
+        endpoint: "jaeger-collector.observability.svc.cluster.local:14250"
+        tls:
+          insecure: true
+
+      # Option 2: OTLP HTTP (if Jaeger supports OTLP)
+      # otlphttp:
+      #   endpoint: "http://jaeger-collector.observability.svc.cluster.local:4318"
+      #   tls:
+      #     insecure: true
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [jaeger]  # Match the exporter name exactly!

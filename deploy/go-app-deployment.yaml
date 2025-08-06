@@ -1,0 +1,58 @@
+# go-app-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-api
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-api
+  template:
+    metadata:
+      labels:
+        app: go-api
+    spec:
+      containers:
+        - name: go-api
+          image:  shn27/restaurant-management-system-monitoring
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "mysql"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USER
+              value: "root"
+            - name: DB_PASSWORD
+              value: "password"
+            - name: DB_NAME
+              value: "food_delivery"
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+            # OpenTelemetry-related environment variables
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "otel-collector.observability.svc.cluster.local:4317"
+            - name: OTEL_SERVICE_NAME
+              value: "go-api"
+            - name: OTEL_EXPORTER_OTLP_INSECURE
+              value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-api
+  namespace: default
+spec:
+  selector:
+    app: go-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

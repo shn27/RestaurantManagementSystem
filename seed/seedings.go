@@ -3,15 +3,16 @@ package seed
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/shn27/RestaurantManagementSystem/internal/database"
-	"github.com/shn27/RestaurantManagementSystem/seed/utils"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/shn27/RestaurantManagementSystem/internal/database"
+	"github.com/shn27/RestaurantManagementSystem/seed/utils"
+	"github.com/spf13/cobra"
 )
 
 const TEST_FILEPATH_USERS_WITH_PURCHASE_HISTORY = "../data/users_with_purchase_history.json"
@@ -173,10 +174,10 @@ func processMenu() {
 		}
 	}
 
-	es := database.EsClient
+	//es := database.EsClient
 
-	utils.CreateIndex(es, "names")
-	utils.InsertDataEs(es, "names", restaurantMenuNamesEs)
+	//utils.CreateIndex(es, "names")
+	//utils.InsertDataEs(es, "names", restaurantMenuNamesEs)
 
 	fmt.Println("Successfully processed menu!")
 }

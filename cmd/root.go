@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/shn27/RestaurantManagementSystem/internal/database"
 	"github.com/shn27/RestaurantManagementSystem/internal/routes"
 	"github.com/shn27/RestaurantManagementSystem/seed"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var main = &cobra.Command{
@@ -30,7 +31,7 @@ var InitializeDB = &cobra.Command{
 			os.Exit(1)
 		}
 		database.ConnectRedis()
-		database.ConnectElasticsearch()
+		//database.ConnectElasticsearch()
 
 		if err := seed.Seed.Execute(); err != nil {
 			fmt.Println(err)

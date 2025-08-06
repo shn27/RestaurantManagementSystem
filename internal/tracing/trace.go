@@ -2,11 +2,12 @@ package tracing
 
 import (
 	"context"
+	"log"
+	"os"
+
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
-	"log"
-	"os"
 
 	"go.opentelemetry.io/otel"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -19,7 +20,6 @@ func InitTracer() func() {
 		log.Fatal("OTEL_EXPORTER_OTLP_ENDPOINT is not set")
 	}
 	ctx := context.Background()
-
 	exp, err := otlptracegrpc.New(ctx,
 		otlptracegrpc.WithEndpoint(endpoint),
 		otlptracegrpc.WithInsecure(),
