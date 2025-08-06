@@ -27,7 +27,6 @@ helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 helm repo update
 
 helm upgrade --install jaeger jaegertracing/jaeger \
-  --namespace observability --create-namespace \
   --set provisionDataStore.cassandra=false \
   --set collector.enabled=true \
   --set query.enabled=true \
@@ -37,13 +36,11 @@ helm upgrade --install jaeger jaegertracing/jaeger \
 
 ```
 
-```azure
+```yaml
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
     helm repo update
-
 helm upgrade --install opentelemetry-operator open-telemetry/opentelemetry-operator \
-    --namespace observability \
-    --create-namespace
+    --set admissionWebhooks.certManager.enabled=false
 ```
 ------
 
@@ -55,7 +52,6 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
   name: otel-collector
-  namespace: observability
 spec:
   mode: deployment
   config: |
@@ -66,8 +62,8 @@ spec:
           http:
 
     exporters:
-      otlphttp:
-        endpoint: "http://jaeger-collector.observability.svc.cluster.local:4318"
+      otlp:
+        endpoint: "jaeger-collector.default:14250"
         tls:
           insecure: true
 
@@ -75,7 +71,7 @@ spec:
       pipelines:
         traces:
           receivers: [otlp]
-          exporters: [otlphttp]  # <-- Changed from "jaeger" to "otlphttp"
+          exporters: [otlp]
 ```
 
 -----
@@ -89,7 +85,7 @@ spec:
 ```yaml
 env:
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
-  value: "http://otel-collector.observability.svc.cluster.local:4317"
+  value: "http://otel-collector.default.svc.cluster.local:4317"
 - name: OTEL_SERVICE_NAME
   value: "my-golang-app"
 
@@ -97,4 +93,4 @@ env:
 -------
 
 ## Verify Integration
-`kubectl port-forward svc/jaeger-query -n observability 16686:16686`
+`kubectl port-forward svc/jaeger-query -n default 16686:16686`
