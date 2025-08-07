@@ -13,7 +13,9 @@ PAGINATION_BATCH_SIZE="100"
 REDIS_HOST="redis"
 REDIS_PORT="6379"
 ELASTICSEARCH_URL="http://elasticsearch:9200"
-OTEL_EXPORTER_OTLP_ENDPOINT="jaeger:4317"
+OTEL_EXPORTER_OTLP_ENDPOINT="otel-collector-collector.default.svc.cluster.local:4317"
+OTEL_SERVICE_NAME="go-api"
+OTEL_EXPORTER_OTLP_INSECURE="true"
 ```
 
 # How to run
