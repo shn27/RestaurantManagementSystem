@@ -13,7 +13,7 @@ spec:
 
     exporters:
       otlp:
-        endpoint: "jaeger-collector.default:14250"
+        endpoint: "jaeger-collector.default.svc.cluster.local:4317"  # OTLP gRPC port
         tls:
           insecure: true
 

@@ -21,8 +21,7 @@ Verify Traces in Jaeger UI
 
 ##  Deploy Jaeger, OTEL via Helm
 
-```azure
-
+```yaml
 helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 helm repo update
 
@@ -63,7 +62,7 @@ spec:
 
     exporters:
       otlp:
-        endpoint: "jaeger-collector.default:14250"
+        endpoint: "jaeger-collector.default.svc.cluster.local:4317"  # OTLP gRPC port
         tls:
           insecure: true
 
@@ -77,7 +76,38 @@ spec:
 -----
 
 ## Instrument Your Golang App
+```go
 
+func InitTracer() func() {
+	// Set up OTLP exporter to send to Jaeger
+	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	if endpoint == "" {
+		log.Fatal("OTEL_EXPORTER_OTLP_ENDPOINT is not set")
+	}
+	ctx := context.Background()
+	exp, err := otlptracegrpc.New(ctx,
+		otlptracegrpc.WithEndpoint(endpoint),
+		otlptracegrpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Fatalf("failed to create exporter: %v", err)
+	}
+
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exp),
+		sdktrace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName("my-restaurant-service"),
+		)),
+	)
+
+	otel.SetTracerProvider(tp)
+	return func() {
+		_ = tp.Shutdown(ctx)
+	}
+}
+
+```
 -------
 
 ##  Deploy Golang App with Env Config
@@ -85,9 +115,9 @@ spec:
 ```yaml
 env:
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
-  value: "http://otel-collector.default.svc.cluster.local:4317"
+  value: "otel-collector-collector.default.svc.cluster.local:4317"
 - name: OTEL_SERVICE_NAME
-  value: "my-golang-app"
+  value: "go-api"
 
 ```
 -------
