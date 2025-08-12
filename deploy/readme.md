@@ -27,9 +27,9 @@ helm repo update
 
 helm upgrade --install jaeger jaegertracing/jaeger \
   --set provisionDataStore.cassandra=false \
-  --set collector.enabled=true \
-  --set query.enabled=true \
-  --set agent.enabled=true \
+  --set collector.enabled=false \
+  --set query.enabled=false \
+  --set agent.enabled=false \
   --set allInOne.enabled=true \
   --set storage.type=memory
 
