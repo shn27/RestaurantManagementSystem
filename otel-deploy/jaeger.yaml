@@ -7,7 +7,7 @@ global:
 
 provisionDataStore:
   cassandra: false
-  elasticsearch: false
+  elasticsearch: true
   kafka: false
 
 networkPolicy:
@@ -98,7 +98,7 @@ allInOne:
 
 storage:
   # allowed values (cassandra, elasticsearch, grpc-plugin, badger, memory)
-  type: memory
+  type: elasticsearch
   cassandra:
     host: cassandra
     port: 9042
