@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: net-test
+  namespace: default
+spec:
+  containers:
+    - name: net-test
+      image: nicolaka/netshoot
+      command: ["sleep", "infinity"]
