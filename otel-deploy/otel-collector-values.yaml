@@ -2,7 +2,7 @@ mode: "deployment"
 config:
   exporters:
     otlp:
-      endpoint: 10.2.0.224:4317 # `jaeger-collector` is the K8s service name. nodeport of 4317
+      endpoint: 10.2.0.224:14250 # `jaeger-collector` is the K8s service name. nodeport of 4317
       tls:
         insecure: true
   extensions:

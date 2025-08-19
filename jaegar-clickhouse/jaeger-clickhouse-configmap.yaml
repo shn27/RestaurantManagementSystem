@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jaeger-clickhouse-config
+  namespace: observability
+data:
+  config.yaml: |
+    # The address must match the ClickHouse Service name created in the previous step
+    address: jaeger-clickhouse:9000
+    username: clickhouse_operator
+    password: clickhouse_operator_password
+    database: default
+    # These are the default table names the plugin will create
+    spans_table: jaeger_spans
+    spans_index_table: jaeger_spans_index
+    operations_table: jaeger_operations
+    timeout: 30s
+    max_span_count: 10000

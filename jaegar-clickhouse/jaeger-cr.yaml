@@ -1,0 +1,20 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger-clickhouse
+  namespace: observability
+spec:
+  strategy: allInOne  # Good for testing. Use "production" for separate components later
+  storage:
+    type: grpc-plugin
+    options:
+      grpc-storage-server: jaeger-clickhouse:9000  # Points to your ClickHouse service
+    grpcPlugin:
+      image: ghcr.io/jaegertracing/jaeger-clickhouse:0.7.0
+  volumeMounts:
+    - name: clickhouse-config
+      mountPath: /etc/jaeger-clickhouse
+  volumes:
+    - name: clickhouse-config
+      configMap:
+        name: jaeger-clickhouse-config  # Your existing ConfigMap

@@ -1,0 +1,25 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger-clickhouse
+  namespace: observability
+spec:
+  strategy: allInOne
+  storage:
+    type: grpc
+    grpcPlugin:
+      image: ghcr.io/jaegertracing/jaeger-clickhouse:0.7.0
+    options:
+      grpc-storage-plugin:
+        binary: /plugin/jaeger-clickhouse
+        configuration-file: /plugin-config/config.yaml
+        log-level: debug
+
+  allInOne:
+    volumes:
+      - name: plugin-config
+        configMap:
+          name: jaeger-clickhouse
+    volumeMounts:
+      - name: plugin-config
+        mountPath: /plugin-config
