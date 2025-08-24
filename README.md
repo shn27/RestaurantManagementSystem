@@ -1,6 +1,25 @@
 # RestaurantManagementSystem
 
-A pet project. Basic REST API practise with some CRUD operation.
+The system is designed for a food delivery platform, where the backend processes and transforms raw datasets into a structured format. This ensures intuitive navigation and efficient data access for front-end clients.
+
+------
+
+# Tech stack & highlights:
+Golang (Go-chi, GORM) for backend development
+
+MySQL for relational database design
+
+Redis for caching
+
+Elasticsearch for fast search
+
+Jaegar for monitoring
+
+Docker for containerized deployment
+
+Postman for API testing
+
+--------
 
 ## Set Environment
 ```azure
@@ -21,10 +40,9 @@ OTEL_EXPORTER_OTLP_ENDPOINT="jaeger:4317"
 
 `docker exec -it db /bin/sh -c "mysql --host localhost -u<user-name> -p<password> -e 'CREATE DATABASE IF NOT EXISTS food_delivery;'"`
 
-# To-DO
+# Plan
 
-1. Use go routine for better perfomance
-2. Seed the database first
+1. Add Monitoring
 
 --------
 ### Host & Base Path
@@ -151,7 +169,7 @@ We have modified the dataset if necessary and doable. Based on modified dataset 
 
 # Monitoring
 ## Tracing
-Add Jaegar for tracing.
+Jaegar for tracing.
 ```
 http://localhost:16686
 ```
@@ -159,5 +177,7 @@ http://localhost:16686
 
 # Help
 https://dev.to/pradumnasaraf/dockerizing-a-golang-api-with-mysql-and-adding-docker-compose-support-9b1
+
 https://tutorialedge.net/golang/go-redis-tutorial/
+
 https://www.freecodecamp.org/news/go-elasticsearch/
