@@ -38,7 +38,7 @@ spec:
               value: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
             # OpenTelemetry-related environment variables
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "otel-collector-opentelemetry-collector.default.svc.cluster.local:4317"
+              value: "opentelemetry-kube-stack-gateway-collector.monitoring.svc.cluster.local:4317"
             - name: OTEL_SERVICE_NAME
               value: "go-api"
             - name: OTEL_EXPORTER_OTLP_INSECURE

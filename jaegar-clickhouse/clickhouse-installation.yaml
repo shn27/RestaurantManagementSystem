@@ -1,22 +1,43 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+---
+# ClickHouse Cluster (Altinity Operator CRD)
 apiVersion: clickhouse.altinity.com/v1
 kind: ClickHouseInstallation
 metadata:
-  name: jaeger-clickhouse
+  name: jaeger
   namespace: observability
 spec:
+  defaults:
+    templates:
+      podTemplate: clickhouse:22.8
   configuration:
     users:
-      clickhouse_operator: # This is a default user created by the ClickHouse operator
-        password: clickhouse_operator_password
+      jaeger_user/password: jaeger_pass
+      jaeger_user/networks/ip: "::/0"
     clusters:
       - name: cluster1
         layout:
           shardsCount: 1
           replicasCount: 1
-  templates:
-    podTemplates:
-      - name: jaeger-clickhouse-pod
-        spec:
-          containers:
-            - name: clickhouse
-              image: clickhouse/clickhouse-server:23.3
+        templates:
+          podTemplate: clickhouse:22.8
+---
+# ConfigMap for Jaeger ClickHouse plugin
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jaeger-clickhouse
+  namespace: observability
+data:
+  config.yaml: |
+    database: jaeger
+    # Service DNS from Altinity operator
+    address: clickhouse-jaeger.observability.svc.cluster.local:9000
+    username: jaeger_user
+    password: jaeger_pass
+    spans_table: jaeger_spans
+    spans_index_table: jaeger_spans_index
+    operations_table: jaeger_operations
