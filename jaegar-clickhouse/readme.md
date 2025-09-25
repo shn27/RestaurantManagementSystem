@@ -1,5 +1,7 @@
 kubectl apply -f https://raw.githubusercontent.com/Altinity/clickhouse-operator/release-0.21.3/deploy/operator/clickhouse-operator-install-bundle.yaml
+
 kc create -f jaegar-clickhouse/jaeger-operator-rbac.yaml
+
 kubectl apply -n observability -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/v1.27.0/deploy/operator.yaml
 
 
